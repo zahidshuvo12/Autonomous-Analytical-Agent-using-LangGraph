@@ -1,0 +1,11 @@
+from typing_extensions import TypedDict, NotRequired
+from typing import Optional, List
+from .objects import Analyst
+
+#state
+class GenerateAnalystState(TypedDict):
+    topic:str #research topic
+    max_analysts:int #number of analysts
+    human_analyst_feedback:NotRequired[Optional[str]] #human feedback for what is generated
+    analyst: NotRequired[List[Analyst]] #list of all analysts
+
