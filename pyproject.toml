@@ -15,12 +15,8 @@ dependencies = [
     "langchain-openai>=1.6.2",
     "langchain-tavily>=0.2.18",
     "langgraph>=1.2.11",
-    "langgraph-cli>=0.4.31",
+    "langgraph-cli[inmem]>=0.4.31",
 ]
 
-[project.scripts]
-langgraph-analyst-agent = "langgraph_analyst_agent:main"
-
-[build-system]
-requires = ["uv_build>=0.12.15,<0.13.0"]
-build-backend = "uv_build"
+[tool.uv]
+package = false
