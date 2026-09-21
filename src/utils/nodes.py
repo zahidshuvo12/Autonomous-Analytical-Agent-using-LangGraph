@@ -4,6 +4,7 @@ from .models import llm
 from .objects import Analyst, Perspectives
 from .prompts import analyst_instructions
 from langchain.messages import SystemMessage, HumanMessage, AIMessage
+from langgraph.types import interrupt
 
 load_dotenv()
 
@@ -45,3 +46,33 @@ def create_analysts(state: GenerateAnalystState):
         "messages": [summary_message],
     }
     
+def human_feedback(state: GenerateAnalystState):
+    
+    analysts = [ analyst.model_dump() if hasattr(analyst, "model_dump") 
+                else analyst for analyst in state.get("analysts", []) ] 
+    
+    # Build a readable version for the interrupt UI 
+    analyst_summary = "\n\n".join( f"{i}. **{analyst.get('name', 'Unknown')}**\n" 
+                                  f" - Role: {analyst.get('role', 'N/A')}\n" 
+                                  for i, analyst in enumerate(analysts, start=1) )
+    feedback = interrupt({
+        "question": "Are these analysts okay?",
+        "analysts": analyst_summary,
+        "instructions": "Return feedback to regenerate analysts, or return empty/perfect/continue to approve."
+    })
+
+    if feedback is None:
+        return {"human_analyst_feedback": None}
+
+    if isinstance(feedback, str):
+        feedback = feedback.strip()
+
+        if feedback == "":
+            return {"human_analyst_feedback": None}
+
+        if feedback.lower() in {"perfect", "continue", "approved", "yes"}:
+            return {"human_analyst_feedback": None}
+
+        return {"human_analyst_feedback": feedback}
+
+    return {"human_analyst_feedback": None}

@@ -9,5 +9,5 @@ class GenerateAnalystState(TypedDict):
     max_analysts:int #number of analysts
     human_analyst_feedback:NotRequired[Optional[str]] #human feedback for what is generated
     analyst: NotRequired[List[Analyst]] #list of all analysts
-    messages: Annotated[list, add_messages]
+    messages: Annotated[List, add_messages]
 
