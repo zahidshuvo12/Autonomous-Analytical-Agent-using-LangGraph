@@ -13,4 +13,7 @@ class Analyst(BaseModel):
         return f"Name: {self.name}\nRole: {self.role}\nAffiliation: {self.affiliation}\nDescription: {self.description}"
     
 class Perspectives(BaseModel):
-    analysts: List[Analyst] = Field(description="Comprehensive list of analysts with their roles and affiliations.")    
+    analysts: List[Analyst] = Field(description="Comprehensive list of analysts with their roles and affiliations.")  
+    
+class SearchQuery(BaseModel):
+    search_query: str = Field(description= "search query for the retrieval")
