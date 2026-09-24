@@ -2,10 +2,11 @@ from dotenv import load_dotenv
 from .states import GenerateAnalystState, InterviewState
 from .models import llm
 from .objects import Analyst, Perspectives, SearchQuery
-from .prompts import analyst_instructions, question_instructions, search_instructions, answer_instructions
+from .prompts import analyst_instructions, question_instructions, search_instructions, answer_instructions, section_writer_instructions
 from langchain.messages import SystemMessage, HumanMessage, AIMessage
 from langgraph.types import interrupt
-from langchain_tavily import TavilyResearch
+from langchain_tavily import TavilySearch
+from langchain_core.messages import get_buffer_string
 
 load_dotenv()
 
@@ -100,7 +101,7 @@ def search_web(state: InterviewState):
     # Search instruction
     structured_llm = llm.with_structured_output(SearchQuery)
     search_instruction_system_message = SystemMessage(content= search_instructions)
-    tavily_search = TavilyResearch (max_results = 3)
+    tavily_search = TavilySearch (max_results = 3)
     search_query = structured_llm.invoke([search_instruction_system_message]+state['messages'])
     
     #Search
@@ -122,7 +123,7 @@ def search_web2(state: InterviewState):
     # Search instruction
     structured_llm = llm.with_structured_output(SearchQuery)
     search_instruction_system_message = SystemMessage(content= search_instructions)
-    tavily_search = TavilyResearch (max_results = 3)
+    tavily_search = TavilySearch (max_results = 3)
     search_query = structured_llm.invoke([search_instruction_system_message]+state['messages'])
     
     #Search
@@ -159,3 +160,32 @@ def generate_answer(state: InterviewState):
     
     # Append it to state
     return {"messages": [answer]}  
+
+def save_interview(state: InterviewState):
+    """ Save interviews """
+
+    # Get messages
+    messages = state["messages"]
+    
+    # Convert interview to a string
+    interview = get_buffer_string(messages)
+    
+    # Save to interviews key
+    return {"interview": interview}
+
+def write_section(state: InterviewState):
+    """ Node to answer a question """
+    # Get state
+    interview = state["interview"]
+    context = state["context"]
+    analyst = state["analyst"]
+
+    if isinstance(analyst, dict):
+            analyst = Analyst.model_validate(analyst)
+    
+    # Write section using either the gathered source docs from interview (context) or the interview itself (interview)
+    system_message = section_writer_instructions.format(focus=analyst.description)
+    section = llm.invoke([SystemMessage(content=system_message)]+[HumanMessage(content=f"Use this source to write your section: {context}")]) 
+                
+    # Append it to state
+    return {"sections": [section.content]}

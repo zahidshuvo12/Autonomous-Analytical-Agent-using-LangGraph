@@ -14,7 +14,7 @@ class GenerateAnalystState(TypedDict):
     messages: Annotated[List, add_messages]
 
 class InterviewState(MessagesState):
-    max_num_turns: int # Number turns of conversation
+    max_num_turns: int # Number of turns of conversation
     context: Annotated[list, operator.add] # Source docs
     analyst: Analyst # Analyst asking questions
     interview: str # Interview transcript
